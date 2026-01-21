@@ -9,8 +9,8 @@ import uuid
 
 # ページ設定
 st.set_page_config(
-    page_title="ファイル共有サイト",
-    page_icon="📁",
+    page_title="🔐",
+    page_icon="🔐",
     layout="wide"
 )
 
@@ -166,7 +166,7 @@ if 'share' in query_params and not st.session_state.authenticated:
 
 # 認証画面
 if not st.session_state.authenticated:
-    st.title("🔐 ファイル共有サイト - ログイン")
+    st.title("🔐")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
