@@ -6,6 +6,7 @@ from datetime import datetime
 import json
 import hashlib
 import uuid
+import time
 
 # ページ設定
 st.set_page_config(
@@ -54,6 +55,7 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
 
 # ユーティリティ関数
 def hash_password(password):
@@ -317,8 +319,14 @@ with tab1:
             
             status_text.empty()
             progress_bar.empty()
+            
+            # アップロードしたファイル名を表示
+            uploaded_names = [uf.name for uf in uploaded_files]
             st.success(f"✅ {len(uploaded_files)}個のファイルをアップロードしました！")
+            for name in uploaded_names:
+                st.write(f"  📄 {name}")
             st.balloons()
+            st.info("📂 「ファイル一覧」タブでアップロードしたファイルを確認できます")
 
 # タブ2: ファイル一覧
 with tab2:
@@ -515,6 +523,12 @@ with tab3:
 
 # サイドバー: 統計情報
 with st.sidebar:
+    # 更新ボタン（別端末との同期用）
+    if st.button("🔄 更新", use_container_width=True, type="primary"):
+        st.rerun()
+    st.caption("別端末でアップロードされたファイルを反映")
+    
+    st.markdown("---")
     st.header("📊 統計情報")
     
     all_files = list(UPLOAD_DIR.glob("*"))
