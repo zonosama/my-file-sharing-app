@@ -19,6 +19,7 @@ uploaded_files/
 file_metadata.json
 users.json
 shared_links.json
+shared_texts.json
 
 # IDEs
 .vscode/

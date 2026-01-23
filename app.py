@@ -20,8 +20,22 @@ UPLOAD_DIR = Path("uploaded_files")
 METADATA_FILE = Path("file_metadata.json")
 USERS_FILE = Path("users.json")
 SHARED_LINKS_FILE = Path("shared_links.json")
+SHARED_TEXTS_FILE = Path("shared_texts.json")
 
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+# テキスト共有用の関数
+def load_shared_texts():
+    """共有テキスト情報を読み込み"""
+    if SHARED_TEXTS_FILE.exists():
+        with open(SHARED_TEXTS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
+
+def save_shared_texts(texts):
+    """共有テキスト情報を保存"""
+    with open(SHARED_TEXTS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(texts, f, ensure_ascii=False, indent=2)
 
 # カスタムCSS
 st.markdown("""
@@ -247,7 +261,7 @@ st.markdown("---")
 metadata = load_metadata()
 
 # タブを作成
-tab1, tab2, tab3 = st.tabs(["📤 ファイルアップロード", "📂 ファイル一覧", "🗂️ フォルダ管理"])
+tab1, tab2, tab3, tab4 = st.tabs(["📤 ファイルアップロード", "📂 ファイル一覧", "📝 テキスト共有", "🗂️ フォルダ管理"])
 
 # タブ1: ファイルアップロード
 with tab1:
@@ -491,8 +505,91 @@ with tab2:
     else:
         st.info("📭 条件に一致するファイルがありません")
 
-# タブ3: フォルダ管理
+# タブ3: テキスト共有
 with tab3:
+    st.header("📝 テキスト・コード共有")
+    st.caption("端末間でテキストやコードを簡単に共有できます")
+    
+    # 共有テキストの読み込み
+    shared_texts = load_shared_texts()
+    
+    # 新規テキスト追加
+    with st.expander("➕ 新しいテキストを追加", expanded=True):
+        text_title = st.text_input("タイトル", placeholder="例: Pythonコード、メモなど")
+        
+        text_type = st.selectbox("種類", ["プレーンテキスト", "Python", "JavaScript", "HTML", "CSS", "JSON", "Bash", "SQL", "その他"])
+        
+        text_content = st.text_area("内容", height=200, placeholder="ここにテキストやコードを入力...")
+        
+        if st.button("💾 保存", type="primary"):
+            if text_content.strip():
+                new_text = {
+                    'id': str(uuid.uuid4())[:8],
+                    'title': text_title or "無題",
+                    'type': text_type,
+                    'content': text_content,
+                    'created_at': datetime.now().isoformat(),
+                    'created_by': st.session_state.username
+                }
+                shared_texts.insert(0, new_text)  # 新しいものを先頭に
+                save_shared_texts(shared_texts)
+                st.success("✅ テキストを保存しました！")
+                st.info("🔄 「ファイル一覧」や他端末で見るには更新ボタンを押してください")
+            else:
+                st.error("❌ 内容を入力してください")
+    
+    st.markdown("---")
+    
+    # 保存されたテキスト一覧
+    st.subheader("📋 保存されたテキスト")
+    
+    if shared_texts:
+        for idx, text_item in enumerate(shared_texts):
+            with st.container():
+                col1, col2, col3 = st.columns([3, 1, 1])
+                
+                with col1:
+                    st.write(f"**{text_item.get('title', '無題')}** ({text_item.get('type', 'テキスト')})")
+                    created = text_item.get('created_at', '')[:16].replace('T', ' ')
+                    st.caption(f"🕐 {created} by {text_item.get('created_by', '不明')}")
+                
+                with col2:
+                    # コードブロックで表示するかどうか
+                    lang_map = {
+                        'Python': 'python',
+                        'JavaScript': 'javascript',
+                        'HTML': 'html',
+                        'CSS': 'css',
+                        'JSON': 'json',
+                        'Bash': 'bash',
+                        'SQL': 'sql',
+                    }
+                    lang = lang_map.get(text_item.get('type'), None)
+                
+                with col3:
+                    if st.button("🗑️", key=f"del_text_{text_item.get('id', idx)}"):
+                        shared_texts.remove(text_item)
+                        save_shared_texts(shared_texts)
+                        st.success("削除しました")
+                        st.rerun()
+                
+                # 内容を表示
+                content = text_item.get('content', '')
+                if lang:
+                    st.code(content, language=lang)
+                else:
+                    st.text_area("", value=content, height=150, key=f"view_{text_item.get('id', idx)}", disabled=False)
+                
+                # コピー用
+                st.text_input("📋 コピー用", value=content, key=f"copy_{text_item.get('id', idx)}", 
+                             help="このテキストを選択してコピーしてください")
+                
+                st.markdown("---")
+    else:
+        st.info("📭 まだテキストが保存されていません")
+
+# タブ4: フォルダ管理
+with tab4:
     st.header("フォルダ管理")
     
     # フォルダ一覧

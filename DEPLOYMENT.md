@@ -25,7 +25,7 @@ git init
 git add .
 
 # コミット
-git commit -m "Initial commit: File sharing app"
+
 
 # GitHubリポジトリを追加（YOUR_USERNAMEとYOUR_REPOを自分のものに変更）
 git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
