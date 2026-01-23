@@ -573,16 +573,13 @@ with tab3:
                         st.success("削除しました")
                         st.rerun()
                 
-                # 内容を表示
+                # 内容を表示（右上にコピーボタンが自動表示される）
                 content = text_item.get('content', '')
                 if lang:
                     st.code(content, language=lang)
                 else:
-                    st.text_area("", value=content, height=150, key=f"view_{text_item.get('id', idx)}", disabled=False)
-                
-                # コピー用
-                st.text_input("📋 コピー用", value=content, key=f"copy_{text_item.get('id', idx)}", 
-                             help="このテキストを選択してコピーしてください")
+                    # プレーンテキストもコードブロックで表示（コピーボタンが使える）
+                    st.code(content, language=None)
                 
                 st.markdown("---")
     else:
