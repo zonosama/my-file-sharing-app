@@ -545,33 +545,33 @@ with tab3:
     
     if shared_texts:
         for idx, text_item in enumerate(shared_texts):
-            with st.container():
-                col1, col2, col3 = st.columns([3, 1, 1])
+            # コードブロックで表示するかどうか
+            lang_map = {
+                'Python': 'python',
+                'JavaScript': 'javascript',
+                'HTML': 'html',
+                'CSS': 'css',
+                'JSON': 'json',
+                'Bash': 'bash',
+                'SQL': 'sql',
+            }
+            lang = lang_map.get(text_item.get('type'), None)
+            
+            # アコーディオン形式で表示
+            created = text_item.get('created_at', '')[:16].replace('T', ' ')
+            title = text_item.get('title', '無題')
+            text_type = text_item.get('type', 'テキスト')
+            creator = text_item.get('created_by', '不明')
+            
+            with st.expander(f"**{title}** ({text_type}) - 🕐 {created} by {creator}", expanded=False):
+                # 削除ボタン
+                if st.button("🗑️ 削除", key=f"del_text_{text_item.get('id', idx)}", type="secondary"):
+                    shared_texts.remove(text_item)
+                    save_shared_texts(shared_texts)
+                    st.success("削除しました")
+                    st.rerun()
                 
-                with col1:
-                    st.write(f"**{text_item.get('title', '無題')}** ({text_item.get('type', 'テキスト')})")
-                    created = text_item.get('created_at', '')[:16].replace('T', ' ')
-                    st.caption(f"🕐 {created} by {text_item.get('created_by', '不明')}")
-                
-                with col2:
-                    # コードブロックで表示するかどうか
-                    lang_map = {
-                        'Python': 'python',
-                        'JavaScript': 'javascript',
-                        'HTML': 'html',
-                        'CSS': 'css',
-                        'JSON': 'json',
-                        'Bash': 'bash',
-                        'SQL': 'sql',
-                    }
-                    lang = lang_map.get(text_item.get('type'), None)
-                
-                with col3:
-                    if st.button("🗑️", key=f"del_text_{text_item.get('id', idx)}"):
-                        shared_texts.remove(text_item)
-                        save_shared_texts(shared_texts)
-                        st.success("削除しました")
-                        st.rerun()
+                st.markdown("---")
                 
                 # 内容を表示（右上にコピーボタンが自動表示される）
                 content = text_item.get('content', '')
@@ -580,8 +580,6 @@ with tab3:
                 else:
                     # プレーンテキストもコードブロックで表示（コピーボタンが使える）
                     st.code(content, language=None)
-                
-                st.markdown("---")
     else:
         st.info("📭 まだテキストが保存されていません")
 
