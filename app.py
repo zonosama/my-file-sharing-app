@@ -22,6 +22,12 @@ USERS_FILE = Path("users.json")
 SHARED_LINKS_FILE = Path("shared_links.json")
 SHARED_TEXTS_FILE = Path("shared_texts.json")
 
+# 新規登録に必要なチケット（合言葉）
+# 公開リポジトリには平文で書かず、以下の優先順位で取得する:
+# 1. st.secrets["REGISTRATION_TICKET"]
+# 2. 環境変数 REGISTRATION_TICKET
+REGISTRATION_TICKET = st.secrets.get("REGISTRATION_TICKET", os.getenv("REGISTRATION_TICKET", ""))
+
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # テキスト共有用の関数
@@ -212,6 +218,7 @@ if not st.session_state.authenticated:
             new_username = st.text_input("ユーザー名", key="reg_username")
             new_password = st.text_input("パスワード", type="password", key="reg_password")
             confirm_password = st.text_input("パスワード（確認）", type="password", key="reg_confirm")
+            ticket = st.text_input("チケット番号", type="password", key="reg_ticket", help="あなた専用の合言葉を入力してください")
             
             col_a, col_b = st.columns(2)
             with col_a:
@@ -222,6 +229,8 @@ if not st.session_state.authenticated:
                         st.error("❌ パスワードが一致しません")
                     elif len(new_password) < 4:
                         st.error("❌ パスワードは4文字以上にしてください")
+                    elif ticket != REGISTRATION_TICKET:
+                        st.error("❌ チケット番号が正しくありません")
                     else:
                         if register_user(new_username, new_password):
                             st.success("✅ 登録完了！ログインしてください")
@@ -236,7 +245,7 @@ if not st.session_state.authenticated:
                     st.rerun()
         
         st.markdown("---")
-        st.info("💡 初回の方は「新規登録」からアカウントを作成してください")
+        st.info("💡 初回の方は「新規登録」からアカウントを作成してください（チケット番号が必要です）")
     
     st.stop()
 
